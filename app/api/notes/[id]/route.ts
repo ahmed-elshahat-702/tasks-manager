@@ -9,7 +9,7 @@ interface JwtPayload {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookiesStore = await cookies();
@@ -24,8 +24,10 @@ export async function DELETE(
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
+    const { id: noteId } = await params;
+
     // Find note and verify ownership
-    const note = await Note.findById(params.id);
+    const note = await Note.findById(noteId);
     if (!note) {
       return NextResponse.json({ message: "Note not found" }, { status: 404 });
     }
@@ -38,7 +40,7 @@ export async function DELETE(
     }
 
     // Delete the note
-    await Note.findByIdAndDelete(params.id);
+    await Note.findByIdAndDelete(noteId);
 
     return NextResponse.json({ message: "Note deleted successfully" });
   } catch (error) {
@@ -53,7 +55,7 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookiesStore = await cookies();
@@ -69,7 +71,9 @@ export async function PATCH(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     const body = await request.json();
 
-    const note = await Note.findById(params.id);
+    const { id: noteId } = await params;
+
+    const note = await Note.findById(noteId);
     if (!note) {
       return NextResponse.json({ message: "Note not found" }, { status: 404 });
     }
@@ -83,7 +87,7 @@ export async function PATCH(
 
     // Update all fields
     const updatedNote = await Note.findByIdAndUpdate(
-      params.id,
+      noteId,
       {
         title: body.title,
         content: body.content,

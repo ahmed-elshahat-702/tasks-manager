@@ -16,9 +16,8 @@ export async function POST() {
 
     return response;
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" || error },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Something went wrong";
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 }

@@ -1,9 +1,14 @@
 import jwt from "jsonwebtoken";
 import User from "../models/UsersModel";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+// Add this interface near the top of the file
+interface JwtPayload {
+  userId: string;
+}
 
 // Register new user
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   if (request.nextUrl.pathname === "/api/users/register") {
     try {
       const { username, password } = await request.json();
@@ -20,14 +25,17 @@ export async function POST(request) {
       const user = new User({ username, password });
       await user.save();
 
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
         expiresIn: "24h",
       });
 
       return NextResponse.json({ token, userId: user._id }, { status: 201 });
     } catch (error) {
       return NextResponse.json(
-        { message: "Error creating user", error: error.message },
+        {
+          message: "Error creating user",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
         { status: 500 }
       );
     }
@@ -57,14 +65,17 @@ export async function POST(request) {
       user.lastLogin = new Date();
       await user.save();
 
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET!, {
         expiresIn: "24h",
       });
 
       return NextResponse.json({ token, userId: user._id });
     } catch (error) {
       return NextResponse.json(
-        { message: "Error logging in", error: error.message },
+        {
+          message: "Error logging in",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
         { status: 500 }
       );
     }
@@ -72,7 +83,7 @@ export async function POST(request) {
 }
 
 // Get user profile
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get("Authorization")?.replace("Bearer ", "");
 
@@ -83,7 +94,10 @@ export async function GET(request) {
       );
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as JwtPayload;
     const user = await User.findById(decoded.userId)
       .select("-password")
       .populate("lists")
@@ -92,7 +106,10 @@ export async function GET(request) {
     return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json(
-      { message: "Error fetching profile", error: error.message },
+      {
+        message: "Error fetching profile",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
