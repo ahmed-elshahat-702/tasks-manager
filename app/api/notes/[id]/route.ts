@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import Note from "../../models/NoteModel";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import connectDB from "../../lib/db";
 
 interface JwtPayload {
   userId: string;
@@ -23,6 +24,8 @@ export async function DELETE(
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    await connectDB();
 
     const { id: noteId } = await params;
 
@@ -69,6 +72,9 @@ export async function PATCH(
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    await connectDB();
+
     const body = await request.json();
 
     const { id: noteId } = await params;

@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import ListModel from "../../models/ListModel";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import connectDB from "../../lib/db";
 
 interface JwtPayload {
   userId: string;
@@ -23,6 +24,8 @@ export async function DELETE(
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
+    await connectDB();
 
     // Find list and verify ownership
     const { id: listId } = await params;

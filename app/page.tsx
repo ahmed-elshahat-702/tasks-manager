@@ -17,7 +17,6 @@ export default function Page() {
     const checkAuth = async () => {
       try {
         const response = await axios.get("/api/auth/check");
-        console.log(response.data);
 
         // When no token found, just set authenticated to false without error
         if (!response.data.isAuthenticated) {

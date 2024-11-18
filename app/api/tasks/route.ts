@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Note from "../models/NoteModel";
+import Task from "../models/TaskModel";
 import { NextResponse } from "next/server";
 import User from "../models/UsersModel";
 import { cookies } from "next/headers";
@@ -25,15 +25,15 @@ export async function GET() {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    const notes = await Note.find({ owner: decoded.userId })
+    const tasks = await Task.find({ owner: decoded.userId })
       .lean()
-      .select("title content color listId createdAt updatedAt")
+      .select("title date time subtask listId completed createdAt updatedAt")
       .exec();
 
-    return NextResponse.json(notes);
+    return NextResponse.json(tasks);
   } catch (error) {
     return NextResponse.json(
-      { message: "Failed to fetch notes", error: error },
+      { message: "Failed to fetch Tasks", error: error },
       { status: 500 }
     );
   }
@@ -59,63 +59,68 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     // Validate required fields
-    if (!data.title || !data.content) {
+    if (!data.title) {
       return NextResponse.json(
-        { message: "Title and content are required" },
+        { message: "Title are required" },
         { status: 400 }
       );
     }
 
     // check if already existed title
-    const existingNote = await Note.findOne({ title: data.title });
-    if (existingNote) {
+    const existingTask = await Task.findOne({ title: data.title });
+    if (existingTask) {
       return NextResponse.json(
-        { message: "Note with the same title already exists" },
+        { message: "Task with this title already exists" },
         { status: 400 }
       );
     }
 
-    // Create the note with explicit type checking
-    const note = new Note({
+    // Create the task with explicit type checking
+    const task = new Task({
       title: data.title,
-      content: data.content,
-      color: data.color,
+      date: data.date,
+      time: data.time,
+      subtasks: data.subtasks,
+      completed: data.completed,
       listId: data.listId,
       owner: decoded.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
-    // Save the note with better error handling
-    const savedNote = await note.save();
-    if (!savedNote) {
-      throw new Error("Failed to save note");
+    // Save the task with better error handling
+    const savedTask = await task.save();
+    if (!savedTask) {
+      throw new Error("Failed to save task");
     }
 
     try {
-      // Add note to user's notes array with error handling
-      const updatedUser = await User.findByIdAndUpdate(
+      // Add task to user's tasks array with error handling
+      const updatedTask = await User.findByIdAndUpdate(
         decoded.userId,
         {
           $push: {
-            notes: {
-              _id: savedNote._id,
-              title: savedNote.title,
-              content: savedNote.content,
-              color: savedNote.color,
-              listId: savedNote.listId,
+            tasks: {
+              _id: savedTask._id,
+              title: savedTask.title,
+              date: savedTask.date,
+              time: savedTask.time,
+              completed: savedTask.completed,
+              subtasks: savedTask.subtasks,
+              listId: savedTask.listId,
             },
           },
         },
         { new: true }
       );
 
-      if (!updatedUser) {
+      if (!updatedTask) {
         throw new Error("User not found");
       }
     } catch (userError) {
-      // If user update fails, delete the saved note to maintain consistency
-      await Note.findByIdAndDelete(savedNote._id);
+      // If user update fails, delete the saved task to maintain consistency
+      await Task.findByIdAndDelete(savedTask._id);
+
       throw new Error(
         `Failed to update user: ${
           userError instanceof Error ? userError.message : "Unknown error"
@@ -123,12 +128,12 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(savedNote, { status: 201 });
+    return NextResponse.json(savedTask, { status: 201 });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { message: "Error creating note", error: errorMessage },
+      { message: "Error creating task", error: errorMessage },
       { status: 500 }
     );
   }

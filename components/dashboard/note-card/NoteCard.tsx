@@ -12,7 +12,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { List, Note } from "@/types/notes";
+import { Note } from "@/types/notes";
+import { List } from "@/types/lists";
 
 interface NoteCardProps {
   note: Note & { _id: string };

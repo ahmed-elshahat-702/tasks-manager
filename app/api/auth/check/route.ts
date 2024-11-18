@@ -34,10 +34,13 @@ export async function GET() {
       );
     }
   } catch (error) {
-    console.error("Auth check error:", error);
     return NextResponse.json(
-      { isAuthenticated: false, message: "Authentication check failed" },
+      {
+        isAuthenticated: false,
+        message: "Authentication check failed",
+        error: error,
+      },
       { status: 500 }
     );
   }
-} 
+}

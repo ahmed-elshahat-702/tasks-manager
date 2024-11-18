@@ -1,7 +1,15 @@
 "use client";
 
-import { Search, StickyNote, XIcon } from "lucide-react";
-import { List, Note, colorOptions } from "@/types/notes";
+import {
+  ArrowRight,
+  Calendar,
+  Menu,
+  Search,
+  StickyNote,
+  XIcon,
+} from "lucide-react";
+import { Note, colorOptions } from "@/types/notes";
+import { List } from "@/types/lists";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -17,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -37,6 +45,8 @@ import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotes } from "@/hooks/use-notes";
+import { useLists } from "@/hooks/use-lists";
 
 interface SidebarProps {
   setIsAuthenticated: (isAuthenticated: boolean) => void;
@@ -74,35 +84,47 @@ export function Sidebar({
   setUsername,
   setPassword,
   searchTerm,
-  lists,
-  notes,
-  isLoading = false,
-  addList,
-  deleteList,
-  newListTitle,
-  setNewListTitle,
-  newListColor,
-  setNewListColor,
   isAddListOpen,
   setIsAddListOpen,
-  isAddingList,
-  deletingListId,
-  getRandomColor,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
 }: SidebarProps) {
+  const { fetchNotes, notes, getRandomColor } = useNotes();
+  const {
+    isLoading,
+    lists,
+    fetchLists,
+    addList,
+    deleteList,
+    newListTitle,
+    setNewListTitle,
+    newListColor,
+    setNewListColor,
+    isAddingList,
+    deletingListId,
+  } = useLists();
+
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { toast } = useToast();
 
   const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
   const [isListsCollapsed, setIsListsCollapsed] = useState(false);
 
-  const [activeLink, setActiveLink] = useState<string | null>("sticky-wall");
+  const [activeLink, setActiveLink] = useState<string | null>("sticky wall");
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      await fetchLists();
+      await fetchNotes();
+    };
+
+    fetchInitialData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSetActiveView = (view: string, listId: string | null = null) => {
     setActiveView(view);
     setSelectedListId(listId);
-    setActiveLink(listId || "sticky-wall");
+    setActiveLink(listId || "sticky wall");
   };
 
   if (isLoading) {
@@ -204,16 +226,73 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     className={`w-full justify-between ${
-                      activeLink === "sticky-wall"
+                      activeLink === "upcoming"
                         ? "bg-gray-100 hover:bg-gray-200"
                         : ""
                     }`}
-                    onClick={() => handleSetActiveView("sticky-wall")}
+                    onClick={() => handleSetActiveView("upcoming")}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <ArrowRight className="mr-2 h-4 w-4" />
+                        Upcoming
+                      </div>
+                      {/* <span className="text-xs text-gray-500">
+                        {tasks?.length}
+                      </span> */}
+                    </div>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-between ${
+                      activeLink === "today"
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : ""
+                    }`}
+                    onClick={() => handleSetActiveView("today")}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <Menu className="mr-2 h-4 w-4" />
+                        Today
+                      </div>
+                      {/* <span className="text-xs text-gray-500">
+                        {tasks?.length}
+                      </span> */}
+                    </div>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-between ${
+                      activeLink === "calender"
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : ""
+                    }`}
+                    onClick={() => handleSetActiveView("calender")}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Calender
+                      </div>
+                      {/* <span className="text-xs text-gray-500">
+                        {tasks?.length}
+                      </span> */}
+                    </div>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-between ${
+                      activeLink === "sticky wall"
+                        ? "bg-gray-100 hover:bg-gray-200"
+                        : ""
+                    }`}
+                    onClick={() => handleSetActiveView("sticky wall")}
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center">
                         <StickyNote className="mr-2 h-4 w-4" />
-                        All Notes
+                        Sticky Wall
                       </div>
                       <span className="text-xs text-gray-500">
                         {notes?.length}
@@ -250,7 +329,7 @@ export function Sidebar({
                             : ""
                         }`}
                         onClick={() =>
-                          handleSetActiveView("sticky-wall", list._id)
+                          handleSetActiveView("sticky wall", list._id)
                         }
                       >
                         <div className="flex items-center">

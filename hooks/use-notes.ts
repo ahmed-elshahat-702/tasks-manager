@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
-import { Note, List, colorOptions } from "@/types/notes";
+import { Note, colorOptions } from "@/types/notes";
 import * as z from "zod";
 import { UseFormReturn } from "react-hook-form";
 
@@ -19,19 +19,11 @@ export const useNotes = () => {
   const [movingNoteId, setMovingNoteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
-  const [lists, setLists] = useState<List[]>([]);
   const [isEditNoteOpen, setIsEditNoteOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [form, setForm] = useState<UseFormReturn<
     z.infer<typeof formSchema>
   > | null>(null);
-  const [newListTitle, setNewListTitle] = useState("");
-  const [newListColor, setNewListColor] = useState("bg-gray-500");
-  const [isAddListOpen, setIsAddListOpen] = useState(false);
-  const [isAddingList, setIsAddingList] = useState(false);
-  const [deletingListId, setDeletingListId] = useState<string | null>(null);
-  const [newTagTitle, setNewTagTitle] = useState("");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isUpdatingNote, setIsUpdatingNote] = useState(false);
 
   const getRandomColor = () => {
@@ -39,87 +31,13 @@ export const useNotes = () => {
     return colors[Math.floor(Math.random() * colors.length)];
   };
 
-  const addList = async () => {
-    if (newListTitle.trim() === "") {
-      toast({
-        title: "Error",
-        description: "Please enter a list title.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsAddingList(true);
-    try {
-      const response = await axios.post("/api/lists", {
-        title: newListTitle.trim(),
-        color: newListColor,
-      });
-
-      const newList = response.data;
-
-      setIsAddListOpen(false);
-      setNewListTitle("");
-      setNewListColor(getRandomColor());
-
-      setLists((prevLists) => [...prevLists, newList]);
-
-      toast({
-        title: "List Added",
-        description: "Your new list has been successfully added.",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to add list. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAddingList(false);
-    }
-  };
-
-  const deleteList = async (id: string) => {
-    setDeletingListId(id);
-    try {
-      await axios.delete(`/api/lists/${id}`);
-
-      setLists((prevLists) => prevLists.filter((list) => list._id !== id));
-      setNotes((prevNotes) =>
-        prevNotes.map((note) =>
-          note.listId === id ? { ...note, listId: null } : note
-        )
-      );
-
-      toast({
-        title: "List Deleted",
-        description: "The list has been successfully deleted.",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete list. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeletingListId(null);
-    }
-  };
-
   const addNote = async (
     data: z.infer<typeof formSchema>,
     form: UseFormReturn<z.infer<typeof formSchema>>,
     setIsAddNoteOpen: (open: boolean) => void
   ) => {
+    setIsAddingNote(true);
     try {
-      setIsAddingNote(true);
-
       const newNote: Omit<Note, "_id"> = {
         id: "",
         title: data.title,
@@ -218,23 +136,6 @@ export const useNotes = () => {
     }
   };
 
-  const fetchLists = async () => {
-    setIsLoading(true);
-    try {
-      const listsRes = await axios.get("/api/lists");
-      setLists(listsRes.data);
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to fetch lists",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleEditNote = (note: Note) => {
     setEditingNote(note);
     setIsEditNoteOpen(true);
@@ -285,21 +186,16 @@ export const useNotes = () => {
   };
 
   return {
-    addList,
-    deleteList,
     isAddingNote,
     deletingNoteId,
     movingNoteId,
     isLoading,
     notes,
-    lists,
     setNotes,
-    setLists,
     addNote,
     deleteNote,
     moveNote,
     fetchNotes,
-    fetchLists,
     handleEditNote,
     handleUpdateNote,
     isEditNoteOpen,
@@ -308,18 +204,6 @@ export const useNotes = () => {
     setEditingNote,
     form,
     setForm,
-    newListTitle,
-    setNewListTitle,
-    newListColor,
-    setNewListColor,
-    isAddListOpen,
-    setIsAddListOpen,
-    isAddingList,
-    deletingListId,
-    newTagTitle,
-    setNewTagTitle,
-    selectedTag,
-    setSelectedTag,
     getRandomColor,
     isUpdatingNote,
   };

@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/UsersModel";
 import { NextRequest, NextResponse } from "next/server";
+import connectDB from "../lib/db";
 
 // Add this interface near the top of the file
 interface JwtPayload {
@@ -9,6 +10,8 @@ interface JwtPayload {
 
 // Register new user
 export async function POST(request: NextRequest) {
+  await connectDB();
+
   if (request.nextUrl.pathname === "/api/users/register") {
     try {
       const { username, password } = await request.json();
@@ -98,6 +101,9 @@ export async function GET(request: NextRequest) {
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
+
+    await connectDB();
+
     const user = await User.findById(decoded.userId)
       .select("-password")
       .populate("lists")

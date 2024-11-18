@@ -3,9 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../../models/UsersModel";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
+import connectDB from "../../lib/db";
 
 export async function POST(req: Request) {
   try {
+    await connectDB();
+
     const { username, password } = await req.json();
 
     // Validate input
@@ -51,19 +54,18 @@ export async function POST(req: Request) {
     // Set cookie
     const cookieStore = await cookies();
     cookieStore.set({
-      name: 'token',
+      name: "token",
       value: token,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 // 7 days in seconds
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     });
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Internal server error", error: error },
       { status: 500 }
     );
   }

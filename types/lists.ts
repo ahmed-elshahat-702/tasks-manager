@@ -1,10 +1,8 @@
-export interface Note {
-  id: string;
+export interface List {
   _id: string;
   title: string;
-  content: string;
   color: string;
-  listId?: string | null;
+  owner: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -2,14 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../../models/UsersModel";
-import mongoose from "mongoose";
+import connectDB from "../../lib/db";
 
 export async function POST(req: Request) {
   try {
-    // Ensure database connection
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connect(process.env.MONGODB_URI as string);
-    }
+    await connectDB();
 
     const { username, password } = await req.json();
 
@@ -43,7 +40,7 @@ export async function POST(req: Request) {
     await user.save();
 
     if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not defined');
+      throw new Error("JWT_SECRET is not defined");
     }
 
     // Generate JWT token
@@ -51,16 +48,20 @@ export async function POST(req: Request) {
       expiresIn: "24h",
     });
 
-    return NextResponse.json({
-      message: "User registered successfully",
-      token,
-      userId: user._id
-    }, { status: 201 });
-
-  } catch (error) {
-    console.error("Registration error:", error);
     return NextResponse.json(
-      { message: "Database connection error. Please try again later." },
+      {
+        message: "User registered successfully",
+        token,
+        userId: user._id,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Database connection error. Please try again later.",
+        error: error,
+      },
       { status: 503 }
     );
   }
