@@ -423,40 +423,6 @@ const StickyWall = ({
           </Form>
         </DialogContent>
       </Dialog>
-
-      {/* Add List Dialog */}
-      {/* <Dialog open={isAddListOpen} onOpenChange={setIsAddListOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded">
-          <DialogHeader>
-            <DialogTitle>Add List to Note</DialogTitle>
-          </DialogHeader>
-          <Select
-            onValueChange={(listId) => {
-              const note = notes.find((n) => n._id === selectedNoteForList);
-              if (selectedNoteForList) {
-                setPendingNoteUpdate({
-                  noteId: selectedNoteForList,
-                  newListId: listId,
-                });
-                moveNote(selectedNoteForList, note?.listId || null, listId);
-              }
-              setIsAddListOpen(false);
-            }}
-            disabled={movingNoteId === selectedNoteForList}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a list" />
-            </SelectTrigger>
-            <SelectContent>
-              {lists?.map((list) => (
-                <SelectItem key={list._id} value={list._id}>
-                  {list.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </DialogContent>
-      </Dialog> */}
     </div>
   );
 };

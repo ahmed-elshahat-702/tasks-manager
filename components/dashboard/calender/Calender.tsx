@@ -113,7 +113,7 @@ const Calendar = () => {
 
         <TabsContent value="day" className="mt-4">
           <ScrollArea className="h-[calc(100vh-200px)]">
-            <div className="space-y-4 pr-4">
+            <div className="space-y-4 pr-4 pb-4">
               {timeSlots.map((hour: Date, idx) => (
                 <div key={idx} className="flex gap-4 p-4 border rounded-lg">
                   <div className="w-24 font-medium">
@@ -145,24 +145,29 @@ const Calendar = () => {
 
         <TabsContent value="week" className="mt-4">
           <ScrollArea className="h-[calc(100vh-200px)]">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-4 pr-4 pb-4">
               {timeSlots.map((day, idx) => (
-                <div key={idx} className="border rounded-lg p-4">
-                  <div className="font-medium mb-2">
+                <div
+                  key={idx}
+                  className="border rounded-lg p-4 flex flex-col h-full"
+                >
+                  <div className="font-medium mb-2 text-center">
                     {format(day, "EEE, MMM d")}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 flex-grow overflow-y-auto">
                     {getTasksForTimeSlot(day).map((task, taskIdx) => (
                       <div
                         key={taskIdx}
                         className={cn(
-                          "p-2 rounded text-sm flex justify-between items-center",
+                          "p-2 rounded text-sm flex flex-col",
                           task.completed ? "bg-green-100" : "bg-blue-100"
                         )}
                       >
-                        <span>{task.title}</span>
+                        <span className="font-medium break-words">
+                          {task.title}
+                        </span>
                         {task.time && (
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-gray-600 mt-1">
                             {convertTo12HourFormat(task.time)}
                           </span>
                         )}
@@ -177,22 +182,27 @@ const Calendar = () => {
 
         <TabsContent value="month" className="mt-4">
           <ScrollArea className="h-[calc(100vh-200px)]">
-            <div className="grid grid-cols-7 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-4 pr-4 pb-4">
               {timeSlots.map((day, idx) => (
-                <div key={idx} className="border rounded-lg p-4 min-h-[120px]">
-                  <div className="font-medium mb-2">{format(day, "d")}</div>
-                  <div className="space-y-1">
+                <div
+                  key={idx}
+                  className="border rounded-lg p-4 flex flex-col min-h-28"
+                >
+                  <div className="font-medium mb-2 text-sm md:text-base">
+                    {format(day, "d")}
+                  </div>
+                  <div className="space-y-2  flex-grow">
                     {getTasksForTimeSlot(day).map((task, taskIdx) => (
                       <div
                         key={taskIdx}
                         className={cn(
-                          "p-1 rounded text-xs flex justify-between items-center",
+                          "p-2 rounded text-sm flex flex-col",
                           task.completed ? "bg-green-100" : "bg-blue-100"
                         )}
                       >
-                        <span>{task.title}</span>
+                        <span className="break-words">{task.title}</span>
                         {task.time && (
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-gray-600 mt-1 md:mt-0 md:ml-2 whitespace-nowrap">
                             {convertTo12HourFormat(task.time)}
                           </span>
                         )}
