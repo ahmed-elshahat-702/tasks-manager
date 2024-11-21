@@ -22,7 +22,7 @@ const Calendar = () => {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [view, setView] = useState<"day" | "week" | "month">("day");
   const today = startOfToday();
