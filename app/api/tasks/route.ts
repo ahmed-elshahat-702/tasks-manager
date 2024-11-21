@@ -27,7 +27,10 @@ export async function GET() {
 
     const tasks = await Task.find({ owner: decoded.userId })
       .lean()
-      .select("title date time subtask listId completed createdAt updatedAt")
+      .select(
+        "title date time subtask listId completed position createdAt updatedAt"
+      )
+      .sort({ position: 1 })
       .exec();
 
     return NextResponse.json(tasks);
@@ -75,7 +78,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the task with explicit type checking
+    // Find the next available position starting from 0
+    let position = 0;
+    let positionTaken = true;
+    while (positionTaken) {
+      const existingTaskAtPosition = await Task.findOne({
+        owner: decoded.userId,
+        position: position,
+      });
+      if (!existingTaskAtPosition) {
+        positionTaken = false;
+      } else {
+        position++;
+      }
+    }
+
+    // Create the task with explicit type checking and the found position
     const task = new Task({
       title: data.title,
       date: data.date,
@@ -83,6 +101,7 @@ export async function POST(request: Request) {
       subtasks: data.subtasks,
       completed: data.completed,
       listId: data.listId,
+      position: position, // Use the found available position
       owner: decoded.userId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -108,6 +127,7 @@ export async function POST(request: Request) {
               completed: savedTask.completed,
               subtasks: savedTask.subtasks,
               listId: savedTask.listId,
+              position: savedTask.position,
             },
           },
         },

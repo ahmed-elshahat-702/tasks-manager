@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import * as z from "zod";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { Task } from "@/types/tasks";
 
 export const taskSchema = z.object({
@@ -10,6 +10,7 @@ export const taskSchema = z.object({
   time: z.string().nullable().optional(),
   subtasks: z.array(z.string()).nullable().optional(),
   listId: z.string().nullable().optional(),
+  position: z.number().nullable().optional(),
 });
 
 export const useTasks = () => {
@@ -47,6 +48,7 @@ export const useTasks = () => {
         time: data.time,
         subtasks: data.subtasks,
         listId: data.listId && data.listId !== "no-list" ? data.listId : null,
+        position: data.position,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

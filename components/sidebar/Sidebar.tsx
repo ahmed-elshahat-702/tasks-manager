@@ -50,6 +50,7 @@ import { useLists } from "@/hooks/use-lists";
 
 interface SidebarProps {
   setIsAuthenticated: (isAuthenticated: boolean) => void;
+  activeView: string;
   setActiveView: (view: string) => void;
   setSelectedListId: (listId: string | null) => void;
   setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
@@ -78,6 +79,7 @@ interface SidebarProps {
 
 export function Sidebar({
   setIsAuthenticated,
+  activeView,
   setActiveView,
   setSelectedListId,
   setSearchTerm,
@@ -110,8 +112,6 @@ export function Sidebar({
   const [isTasksCollapsed, setIsTasksCollapsed] = useState(false);
   const [isListsCollapsed, setIsListsCollapsed] = useState(false);
 
-  const [activeLink, setActiveLink] = useState<string | null>("sticky wall");
-
   useEffect(() => {
     const fetchInitialData = async () => {
       await fetchLists();
@@ -124,7 +124,6 @@ export function Sidebar({
   const handleSetActiveView = (view: string, listId: string | null = null) => {
     setActiveView(view);
     setSelectedListId(listId);
-    setActiveLink(listId || "sticky wall");
   };
 
   if (isLoading) {
@@ -226,7 +225,7 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     className={`w-full justify-between ${
-                      activeLink === "upcoming"
+                      activeView === "upcoming"
                         ? "bg-gray-100 hover:bg-gray-200"
                         : ""
                     }`}
@@ -245,7 +244,7 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     className={`w-full justify-between ${
-                      activeLink === "today"
+                      activeView === "today"
                         ? "bg-gray-100 hover:bg-gray-200"
                         : ""
                     }`}
@@ -264,7 +263,7 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     className={`w-full justify-between ${
-                      activeLink === "calender"
+                      activeView === "calender"
                         ? "bg-gray-100 hover:bg-gray-200"
                         : ""
                     }`}
@@ -283,7 +282,7 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     className={`w-full justify-between ${
-                      activeLink === "sticky wall"
+                      activeView === "sticky wall"
                         ? "bg-gray-100 hover:bg-gray-200"
                         : ""
                     }`}
@@ -324,7 +323,7 @@ export function Sidebar({
                       <Button
                         variant="ghost"
                         className={`flex-grow justify-start ${
-                          activeLink === list._id
+                          activeView === list._id
                             ? "bg-gray-100 hover:bg-gray-200"
                             : ""
                         }`}

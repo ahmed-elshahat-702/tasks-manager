@@ -27,6 +27,10 @@ const taskSchema = new mongoose.Schema(
       ref: "List",
       required: false,
     },
+    position: {
+      type: Number,
+      default: 0,
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -47,12 +51,13 @@ const taskSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    indexes: [{ title: 1 }, { userId: 1 }, { createdAt: -1 }],
+    indexes: [{ title: 1 }, { userId: 1 }, { createdAt: -1 }, { position: 1 }],
   }
 );
 
 // Add compound index for better query performance
 taskSchema.index({ userId: 1, createdAt: -1 });
+taskSchema.index({ userId: 1, position: 1 });
 
 // Update the updatedAt timestamp before saving
 taskSchema.pre("save", function (next) {

@@ -39,7 +39,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   };
   const listData = getListData();
 
-  function convertTo12HourFormat(time: String) {
+  function convertTo12HourFormat(time: string) {
     const [hours, minutes] = time?.split(":").map(Number);
 
     const suffix = hours >= 12 ? "PM" : "AM";

@@ -2,38 +2,45 @@ import { NextResponse } from "next/server";
 import TaskModel from "../../models/TaskModel";
 import connectDB from "../../lib/db";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    await connectDB();
+// export async function GET(
+//   request: Request,
+//   { params }: { params: Promise<{ id: string }> }
+// ) {
+//   try {
+//     await connectDB();
+//     const { id: taskId } = await params;
 
-    const task = await TaskModel.findOne({
-      _id: params.id,
-    });
+//     const task = await TaskModel.findOne({
+//       _id: taskId,
+//     });
 
-    if (!task) {
-      return new NextResponse("Task not found", { status: 404 });
-    }
+//     if (!task) {
+//       return new NextResponse("Task not found", { status: 404 });
+//     }
 
-    return NextResponse.json(task);
-  } catch (error) {
-    console.error("[TASK_GET]", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
-}
+//     return NextResponse.json(task);
+//   } catch (error) {
+//     console.error("[TASK_GET]", error);
+//     return new NextResponse("Internal error", { status: 500 });
+//   }
+// }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     await connectDB();
+    const { id: taskId } = await params;
+
+    // Handle empty or "no-list" listId
+    if (body.listId === "" || body.listId === "no-list") {
+      body.listId = null;
+    }
 
     const task = await TaskModel.findOneAndUpdate(
-      { _id: params.id },
+      { _id: taskId },
       { $set: body },
       { new: true }
     );
@@ -51,13 +58,14 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id: taskId } = await params;
 
     const task = await TaskModel.findOneAndDelete({
-      _id: params.id,
+      _id: taskId,
     });
 
     if (!task) {

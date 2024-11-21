@@ -60,7 +60,13 @@ const Upcoming = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    return setOrderedTasks(tasks);
+    // Sort tasks by position when they're loaded
+    const sortedTasks = [...tasks].sort((a, b) => {
+      const posA = a.position ?? 0;
+      const posB = b.position ?? 0;
+      return posA - posB;
+    });
+    setOrderedTasks(sortedTasks);
   }, [tasks]);
 
   const form = useForm({
@@ -71,6 +77,7 @@ const Upcoming = () => {
       time: "",
       completed: false,
       listId: "",
+      position: 0,
     },
   });
 
@@ -81,38 +88,51 @@ const Upcoming = () => {
     completed: boolean;
     subtasks?: string[] | undefined;
     listId?: string | undefined;
+    position?: number | undefined;
   }) => {
     await addTask(data);
-    setIsAddTaskDialogOpen(false);
     form.reset({
       title: "",
       date: "",
       time: "",
       completed: false,
       listId: "",
+      position: 0,
     });
+    setIsAddTaskDialogOpen(false);
+    setSelectedTask(null);
   };
 
   const onEditTask = (task: Task) => {
     setSelectedTask(task);
     setIsEditTaskOpen(true);
     form.reset({
-      title: "",
-      date: "",
-      time: "",
-      completed: false,
-      listId: "",
+      title: task.title,
+      date: task.date,
+      time: task.time,
+      completed: task.completed,
+      listId: task.listId || "",
+      position: task.position,
     });
   };
 
-  const handleDragEnd = (result: any) => {
+  const handleDragEnd = (result: {
+    source: { index: number };
+    destination: { index: number } | null;
+  }) => {
     if (!result.destination) return;
 
     const items = Array.from(orderedTasks);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
+    // Update the local state
     setOrderedTasks(items);
+
+    // Save the new order to the database
+    items.forEach(async (task, index) => {
+      await updateTask(task._id, { position: index });
+    });
   };
 
   const TasksSkeleton = () => (
@@ -198,7 +218,23 @@ const Upcoming = () => {
         )}
       </ScrollArea>
       {/* add task dialog */}
-      <Dialog open={isAddTaskDialogOpen} onOpenChange={setIsAddTaskDialogOpen}>
+      <Dialog
+        open={isAddTaskDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            form.reset({
+              title: "",
+              date: "",
+              time: "",
+              completed: false,
+              listId: "",
+              position: 0,
+            });
+            setSelectedTask(null);
+          }
+          setIsAddTaskDialogOpen(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add New Task</DialogTitle>
@@ -252,7 +288,7 @@ const Upcoming = () => {
                     <FormLabel>List (optional)</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || "no-list"}
                       disabled={isAddingTask}
                     >
                       <FormControl>
@@ -291,8 +327,15 @@ const Upcoming = () => {
         open={isEditTaskOpen}
         onOpenChange={(open) => {
           if (!open) {
+            form.reset({
+              title: "",
+              date: "",
+              time: "",
+              completed: false,
+              listId: "",
+              position: 0,
+            });
             setSelectedTask(null);
-            form.reset();
           }
           setIsEditTaskOpen(open);
         }}
@@ -309,6 +352,14 @@ const Upcoming = () => {
                   setIsEditTaskOpen(false);
                   setSelectedTask(null);
                   fetchTasks();
+                  form.reset({
+                    title: "",
+                    date: "",
+                    time: "",
+                    completed: false,
+                    listId: "",
+                    position: 0,
+                  });
                 }
               })}
               className="space-y-4"
@@ -337,7 +388,9 @@ const Upcoming = () => {
                         {...field}
                         type="date"
                         value={
-                          new Date(field.value).toISOString().split("T")[0]
+                          field.value
+                            ? new Date(field.value).toISOString().split("T")[0]
+                            : ""
                         }
                         disabled={isUpdatingTask}
                       />
@@ -367,7 +420,7 @@ const Upcoming = () => {
                     <FormLabel>List</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value || "no-list"}
                       disabled={isUpdatingTask}
                     >
                       <FormControl>

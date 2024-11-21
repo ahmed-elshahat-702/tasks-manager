@@ -5,6 +5,7 @@ export interface Task {
   time?: string;
   subtasks?: string[];
   listId?: string | null;
+  position?: number;
   owner: string;
   completed: boolean;
   createdAt: string;

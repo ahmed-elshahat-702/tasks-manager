@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import axios, { AxiosError } from "axios";
-import { Eye, EyeOff } from "lucide-react"; // Add icons for password visibility
+import { Eye, EyeOff } from "lucide-react";
 
 interface LoginFormProps {
   setIsAuthenticated: (value: boolean) => void;
@@ -28,9 +28,44 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showUsernameError, setShowUsernameError] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [showConfirmPasswordError, setShowConfirmPasswordError] =
+    useState(false);
+
+  // Validation rules
+  const isUsernameValid = username.length >= 3;
+  const isPasswordValid = password.length >= 6;
+  const isConfirmPasswordValid = !isLogin ? confirmPassword === password : true;
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    setShowUsernameError(true);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    setShowPasswordError(true);
+  };
+
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setConfirmPassword(e.target.value);
+    setShowConfirmPasswordError(true);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Show all validation messages on submit
+    setShowUsernameError(true);
+    setShowPasswordError(true);
+
+    if (!isUsernameValid || !isPasswordValid) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data } = await axios.post("/api/auth/login", {
@@ -61,12 +96,13 @@ export function LoginForm({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      toast({
-        title: "Signup Failed",
-        description: "Passwords do not match.",
-        variant: "destructive",
-      });
+
+    // Show all validation messages on submit
+    setShowUsernameError(true);
+    setShowPasswordError(true);
+    setShowConfirmPasswordError(true);
+
+    if (!isUsernameValid || !isPasswordValid || !isConfirmPasswordValid) {
       return;
     }
 
@@ -110,16 +146,28 @@ export function LoginForm({
             type="text"
             placeholder="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={handleUsernameChange}
             disabled={isLoading}
+            className={
+              showUsernameError && !isUsernameValid ? "border-red-500" : ""
+            }
           />
+          {showUsernameError && !isUsernameValid && (
+            <p className="text-sm text-red-500">
+              Username must be at least 3 characters long.
+            </p>
+          )}
+
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               disabled={isLoading}
+              className={
+                showPasswordError && !isPasswordValid ? "border-red-500" : ""
+              }
             />
             <button
               type="button"
@@ -128,34 +176,50 @@ export function LoginForm({
               disabled={isLoading}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-500" />
-              ) : (
                 <Eye className="h-4 w-4 text-gray-500" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-gray-500" />
               )}
             </button>
           </div>
+          {showPasswordError && !isPasswordValid && (
+            <p className="text-sm text-red-500">
+              Password must be at least 6 characters long.
+            </p>
+          )}
+
           {!isLogin && (
-            <div className="relative">
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-                disabled={isLoading}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-500" />
-                ) : (
-                  <Eye className="h-4 w-4 text-gray-500" />
-                )}
-              </button>
-            </div>
+            <>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  disabled={isLoading}
+                  className={
+                    showConfirmPasswordError && !isConfirmPasswordValid
+                      ? "border-red-500"
+                      : ""
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
+              {showConfirmPasswordError && !isConfirmPasswordValid && (
+                <p className="text-sm text-red-500">Passwords do not match.</p>
+              )}
+            </>
           )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Loading..." : isLogin ? "Login" : "Sign Up"}

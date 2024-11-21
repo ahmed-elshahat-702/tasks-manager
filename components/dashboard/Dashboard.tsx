@@ -20,7 +20,7 @@ const Dashboard = ({
   setPassword: (password: string) => void;
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeView, setActiveView] = useState("sticky wall");
+  const [activeView, setActiveView] = useState("upcoming");
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -94,6 +94,7 @@ const Dashboard = ({
           {/* Sidebar */}
           <Sidebar
             setIsAuthenticated={setIsAuthenticated}
+            activeView={activeView}
             setActiveView={setActiveView}
             setSelectedListId={setSelectedListId}
             setNotes={setNotes}
