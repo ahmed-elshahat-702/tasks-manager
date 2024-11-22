@@ -143,6 +143,7 @@ export function LoginForm({
           className="space-y-4"
         >
           <Input
+            name="username"
             type="text"
             placeholder="Username"
             value={username}
@@ -160,6 +161,7 @@ export function LoginForm({
 
           <div className="relative">
             <Input
+              name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
@@ -192,6 +194,7 @@ export function LoginForm({
             <>
               <div className="relative">
                 <Input
+                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm Password"
                   value={confirmPassword}

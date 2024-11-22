@@ -124,6 +124,7 @@ export function Sidebar({
   const handleSetActiveView = (view: string, listId: string | null = null) => {
     setActiveView(view);
     setSelectedListId(listId);
+    setIsMobileMenuOpen(false);
   };
 
   if (isLoading) {

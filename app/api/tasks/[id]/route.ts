@@ -51,8 +51,7 @@ export async function PATCH(
 
     return NextResponse.json(task);
   } catch (error) {
-    console.error("[TASK_PATCH]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    return new NextResponse("Internal error", error, { status: 500 });
   }
 }
 
@@ -74,7 +73,6 @@ export async function DELETE(
 
     return NextResponse.json(task);
   } catch (error) {
-    console.error("[TASK_DELETE]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    return new NextResponse("Internal error", error, { status: 500 });
   }
 }

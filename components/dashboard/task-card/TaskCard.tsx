@@ -2,7 +2,7 @@ import React from "react";
 import { Task } from "@/types/tasks";
 import { List } from "@/types/lists";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Pencil, Trash } from "lucide-react";
+import { Calendar, Clock, GripVertical, Pencil, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -57,6 +57,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       )}
     >
       <div className="flex items-start gap-3">
+        <GripVertical />
         <Checkbox
           checked={task.completed}
           onCheckedChange={handleCompletedChange}
@@ -112,7 +113,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             size="icon"
             onClick={onDelete}
             disabled={isDeleting}
-            className="opacity-0 group-hover:opacity-100 text-red-600"
+            className="md:opacity-0 group-hover:opacity-100 text-red-600"
           >
             <Trash className="h-4 w-4" />
           </Button>

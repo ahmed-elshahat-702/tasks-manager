@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Note } from "@/types/notes";
 import { List } from "@/types/lists";
+import { useToast } from "@/hooks/use-toast";
 
 interface NoteCardProps {
   note: Note & { _id: string };
@@ -38,8 +39,9 @@ const NoteCard = ({
   lists,
   deletingNoteId,
 }: NoteCardProps) => {
+  const toast = useToast();
   if (!note || !note._id || typeof note._id !== "string") {
-    console.warn("Invalid note data received:", note);
+    toast({ title: "Invalid note data received" });
     return null;
   }
 
