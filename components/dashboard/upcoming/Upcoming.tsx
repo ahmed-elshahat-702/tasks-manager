@@ -59,7 +59,7 @@ const Upcoming = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchLists();
-  }, [lists]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Sort tasks by position when they're loaded

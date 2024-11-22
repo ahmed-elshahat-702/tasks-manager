@@ -80,17 +80,13 @@ export async function POST(request: Request) {
 
     // Find the next available position starting from 0
     let position = 0;
-    let positionTaken = true;
-    while (positionTaken) {
-      const existingTaskAtPosition = await Task.findOne({
-        owner: decoded.userId,
-        position: position,
-      });
-      if (!existingTaskAtPosition) {
-        positionTaken = false;
-      } else {
-        position++;
-      }
+    const tasks = await Task.find({ owner: decoded.userId })
+      .sort({ date: 1, time: 1 })
+      .exec();
+    const positions = tasks.map((task) => task.position);
+
+    while (positions.includes(position)) {
+      position++;
     }
 
     // Create the task with explicit type checking and the found position
@@ -101,7 +97,7 @@ export async function POST(request: Request) {
       subtasks: data.subtasks,
       completed: data.completed,
       listId: data.listId,
-      position: position, // Use the found available position
+      position: position,
       owner: decoded.userId,
       createdAt: new Date(),
       updatedAt: new Date(),

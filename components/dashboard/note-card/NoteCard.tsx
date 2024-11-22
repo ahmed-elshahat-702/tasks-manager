@@ -39,7 +39,8 @@ const NoteCard = ({
   lists,
   deletingNoteId,
 }: NoteCardProps) => {
-  const toast = useToast();
+  const { toast } = useToast();
+
   if (!note || !note._id || typeof note._id !== "string") {
     toast({ title: "Invalid note data received" });
     return null;

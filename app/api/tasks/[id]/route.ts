@@ -51,7 +51,7 @@ export async function PATCH(
 
     return NextResponse.json(task);
   } catch (error) {
-    return new NextResponse("Internal error", error, { status: 500 });
+    return new NextResponse(`Internal error: ${error}`, { status: 500 });
   }
 }
 

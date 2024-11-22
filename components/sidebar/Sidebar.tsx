@@ -199,6 +199,8 @@ export function Sidebar({
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
             <Input
+              name="search"
+              id="search"
               className="pl-8"
               placeholder="Search"
               type="search"
@@ -477,6 +479,8 @@ export function Sidebar({
                 className="space-y-4"
               >
                 <Input
+                  id="list-title"
+                  name="list-title"
                   placeholder="List title"
                   value={newListTitle}
                   onChange={(e) => setNewListTitle(e.target.value)}
